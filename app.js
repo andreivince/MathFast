@@ -68,6 +68,7 @@ let swipeStartX = 0;
 let swipeStartY = 0;
 let swipePointerId = null;
 let lastWheelSwipeAt = 0;
+let autoSubmitting = false;
 
 function defaultState() {
   return {
@@ -127,6 +128,28 @@ function parseAnswer(value) {
     return b ? a / b : NaN;
   }
   return Number(cleaned);
+}
+
+function decimalsFor(value) {
+  const text = String(value);
+  return text.includes(".") ? text.split(".")[1].length : 0;
+}
+
+function answerLooksComplete(rawValue, parsedValue, question) {
+  const value = rawValue.trim();
+  if (!value) return false;
+  if (value === "-" || value === "." || value.endsWith(".")) return false;
+  if (!Number.isFinite(parsedValue)) return false;
+  if (Math.abs(parsedValue - question.answer) > question.tolerance) return false;
+
+  if (Number.isInteger(question.answer)) {
+    return /^-?\d+$/.test(value);
+  }
+
+  const neededDecimals = decimalsFor(question.answer);
+  if (value.includes("/")) return true;
+  if (!value.includes(".")) return neededDecimals === 0;
+  return value.split(".")[1].length >= neededDecimals;
 }
 
 function makeQuestion(pool = null) {
@@ -403,6 +426,7 @@ function submitAnswer(event) {
   event.preventDefault();
   if (!activeQuestion || els.answerInput.disabled) return;
   clearTimeout(pressureTimeout);
+  autoSubmitting = false;
   const value = parseAnswer(els.answerInput.value);
   if (!Number.isFinite(value)) return;
 
@@ -417,6 +441,14 @@ function submitAnswer(event) {
   els.feedback.className = `feedback ${correct ? "good" : "bad"}`;
 
   window.setTimeout(() => newQuestion(), mode === "pressure" ? 260 : 520);
+}
+
+function maybeAutoSubmit() {
+  if (!activeQuestion || els.answerInput.disabled || autoSubmitting) return;
+  const value = parseAnswer(els.answerInput.value);
+  if (!answerLooksComplete(els.answerInput.value, value, activeQuestion)) return;
+  autoSubmitting = true;
+  els.answerForm.requestSubmit();
 }
 
 function recordResult(question, correct, slow, elapsed) {
@@ -633,6 +665,7 @@ els.modeTabs.forEach((tab) => {
 
 els.startDailyBtn.addEventListener("click", startDaily);
 els.answerForm.addEventListener("submit", submitAnswer);
+els.answerInput.addEventListener("input", maybeAutoSubmit);
 els.retryWeakBtn.addEventListener("click", () => {
   stopTimer();
   drillActive = true;
@@ -657,7 +690,7 @@ els.trainerScreen.addEventListener("mousedown", onSwipeStart);
 els.trainerScreen.addEventListener("mouseup", onSwipeEnd);
 window.addEventListener("wheel", onSwipeWheel, { passive: false });
 
-if ("serviceWorker" in navigator) {
+  if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js").catch(() => {});
   });
