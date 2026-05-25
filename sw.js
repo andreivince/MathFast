@@ -1,11 +1,11 @@
 "use strict";
 
-const CACHE_NAME = "aura-math-v3";
+const CACHE_NAME = "aura-math-v4";
 const ASSETS = [
   ".",
   "index.html",
-  "styles.css",
-  "app.js",
+  "styles.css?v=4",
+  "app.js?v=4",
   "manifest.webmanifest",
   "icons/icon.svg"
 ];
