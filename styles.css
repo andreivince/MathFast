@@ -1,0 +1,395 @@
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --ink: #050505;
+  --muted: #666666;
+  --line: #dddddd;
+  --soft: #f7f7f7;
+  --danger: #b00020;
+  --good: #0b7a3b;
+  --focus: #111111;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 1px solid var(--ink);
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.app-shell {
+  width: min(720px, 100%);
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: calc(18px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
+}
+
+.topbar,
+.mission-panel,
+.phase-meter,
+.weak-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.topbar {
+  margin-bottom: 18px;
+}
+
+.eyebrow,
+.category-label,
+.phase-label,
+.phase-hint,
+.feedback,
+.mini-grid span,
+.stats-grid span,
+.weak-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: clamp(2rem, 9vw, 3.8rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+h2 {
+  margin-bottom: 6px;
+  font-size: clamp(1.35rem, 6vw, 2.4rem);
+  line-height: 1.02;
+  letter-spacing: 0;
+}
+
+h3 {
+  margin-bottom: 0;
+  font-size: 1rem;
+}
+
+.top-stats {
+  display: flex;
+  gap: 6px;
+}
+
+.top-stats span {
+  min-width: 48px;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  text-align: center;
+  font-weight: 800;
+}
+
+.mission-panel {
+  min-height: 120px;
+  margin-bottom: 14px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.mission-copy {
+  min-width: 0;
+}
+
+.mission-copy p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.primary-action,
+.answer-form button,
+#retryWeakBtn {
+  min-height: 46px;
+  border-radius: 0;
+  font-weight: 800;
+}
+
+.primary-action,
+.answer-form button {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.primary-action {
+  flex: 0 0 auto;
+  padding: 0 16px;
+}
+
+.workbench {
+  border-top: 1px solid var(--line);
+}
+
+.mode-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border-bottom: 1px solid var(--line);
+}
+
+.mode-tab {
+  min-height: 44px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.mode-tab:last-child {
+  border-right: 0;
+}
+
+.mode-tab.active {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.phase-meter {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.phase-hint {
+  margin-top: 4px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.timer {
+  min-width: 72px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.view {
+  display: none;
+  padding: 16px 0;
+}
+
+.view.active {
+  display: block;
+}
+
+.question-card {
+  min-height: 300px;
+  display: grid;
+  align-content: center;
+  gap: 16px;
+}
+
+.question-text {
+  min-height: 92px;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: clamp(3rem, 18vw, 8rem);
+  font-weight: 850;
+  line-height: 0.9;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.answer-form {
+  display: grid;
+  grid-template-columns: 1fr 76px;
+  gap: 8px;
+}
+
+.answer-form input {
+  width: 100%;
+  min-height: 54px;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: var(--bg);
+  color: var(--ink);
+  padding: 0 12px;
+  font-size: 1.25rem;
+  font-weight: 750;
+  outline: 0;
+}
+
+.answer-form input:focus {
+  box-shadow: inset 0 0 0 2px var(--focus);
+}
+
+.feedback {
+  min-height: 22px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.feedback.good {
+  color: var(--good);
+}
+
+.feedback.bad {
+  color: var(--danger);
+}
+
+.mini-grid,
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.mini-grid div,
+.stats-grid div,
+.weak-item {
+  background: var(--bg);
+}
+
+.mini-grid div,
+.stats-grid div {
+  min-height: 70px;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  padding: 12px;
+}
+
+.mini-grid strong,
+.stats-grid strong {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.weak-header {
+  margin-bottom: 12px;
+}
+
+#retryWeakBtn {
+  padding: 0 14px;
+}
+
+.weak-list {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+
+.weak-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.weak-fact {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.weak-score {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.empty-state {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  text-align: center;
+}
+
+.stats-grid {
+  grid-template-columns: repeat(2, 1fr);
+  margin-bottom: 14px;
+}
+
+.category-bars {
+  display: grid;
+  gap: 10px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 92px 1fr 38px;
+  gap: 10px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.bar-track {
+  height: 8px;
+  overflow: hidden;
+  background: var(--soft);
+  border: 1px solid var(--line);
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--ink);
+}
+
+@media (min-width: 740px) {
+  .app-shell {
+    padding-top: 34px;
+  }
+
+  .question-card {
+    min-height: 380px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 430px) {
+  .mission-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .primary-action {
+    width: 100%;
+  }
+
+  .mode-tab {
+    font-size: 0.78rem;
+  }
+
+  .question-text {
+    font-size: clamp(2.8rem, 17vw, 4.6rem);
+  }
+}

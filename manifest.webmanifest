@@ -1,0 +1,19 @@
+{
+  "name": "Aura Math",
+  "short_name": "Aura Math",
+  "description": "A local-first 10-minute daily mental math trainer.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

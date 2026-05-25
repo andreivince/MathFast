@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Aura Math">
+    <title>Aura Math</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Daily trainer</p>
+          <h1>Aura Math</h1>
+        </div>
+        <div class="top-stats" aria-label="Current progress">
+          <span id="streakPill">0d</span>
+          <span id="accuracyPill">0%</span>
+        </div>
+      </header>
+
+      <section class="mission-panel" aria-labelledby="missionTitle">
+        <div class="mission-copy">
+          <p class="eyebrow">Today</p>
+          <h2 id="missionTitle">10-minute mission</h2>
+          <p id="missionStatus">Warm facts, pressure, weak facts, flash sum.</p>
+        </div>
+        <button id="startDailyBtn" class="primary-action" type="button">Start 10 min</button>
+      </section>
+
+      <section class="workbench" aria-live="polite">
+        <div class="mode-row" role="tablist" aria-label="Training mode">
+          <button class="mode-tab active" type="button" data-mode="timed">Drill</button>
+          <button class="mode-tab" type="button" data-mode="weak">Weak</button>
+          <button class="mode-tab" type="button" data-mode="pressure">Pressure</button>
+          <button class="mode-tab" type="button" data-mode="flash">Flash</button>
+          <button class="mode-tab" type="button" data-mode="stats">Stats</button>
+        </div>
+
+        <div class="phase-meter">
+          <div>
+            <p id="phaseLabel" class="phase-label">Timed drill</p>
+            <p id="phaseHint" class="phase-hint">Speed counts. Slow correct answers become weak facts.</p>
+          </div>
+          <div id="timerDisplay" class="timer">--:--</div>
+        </div>
+
+        <div id="drillView" class="view active">
+          <div class="question-card">
+            <p id="categoryLabel" class="category-label">Arithmetic</p>
+            <div id="questionText" class="question-text">Tap Start</div>
+            <form id="answerForm" class="answer-form" autocomplete="off">
+              <input id="answerInput" inputmode="decimal" enterkeyhint="done" type="text" placeholder="Answer" aria-label="Answer">
+              <button type="submit">Go</button>
+            </form>
+            <div id="feedback" class="feedback"></div>
+          </div>
+          <div class="mini-grid">
+            <div>
+              <span>Reps</span>
+              <strong id="sessionReps">0</strong>
+            </div>
+            <div>
+              <span>Accuracy</span>
+              <strong id="sessionAccuracy">0%</strong>
+            </div>
+            <div>
+              <span>Avg</span>
+              <strong id="sessionAvg">0.0s</strong>
+            </div>
+          </div>
+        </div>
+
+        <div id="weakView" class="view">
+          <div class="weak-header">
+            <div>
+              <p class="category-label">Weak facts</p>
+              <h3>Missed or slow</h3>
+            </div>
+            <button id="retryWeakBtn" type="button">Retry weak</button>
+          </div>
+          <div id="weakList" class="weak-list"></div>
+        </div>
+
+        <div id="statsView" class="view">
+          <div class="stats-grid">
+            <div><span>Streak</span><strong id="statStreak">0</strong></div>
+            <div><span>Total reps</span><strong id="statReps">0</strong></div>
+            <div><span>Accuracy</span><strong id="statAccuracy">0%</strong></div>
+            <div><span>Avg response</span><strong id="statAvg">0.0s</strong></div>
+            <div><span>Weak categories</span><strong id="statWeakCats">0</strong></div>
+            <div><span>Best 60s</span><strong id="statBest60">0</strong></div>
+          </div>
+          <div class="category-bars" id="categoryBars"></div>
+        </div>
+      </section>
+    </main>
+    <script src="app.js" defer></script>
+  </body>
+</html>
