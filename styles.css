@@ -39,21 +39,15 @@ button {
   width: min(720px, 100%);
   min-height: 100svh;
   margin: 0 auto;
-  padding: calc(18px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
+  padding: 0 16px;
 }
 
-.topbar,
-.mission-panel,
 .phase-meter,
 .weak-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-}
-
-.topbar {
-  margin-bottom: 18px;
 }
 
 .eyebrow,
@@ -99,37 +93,13 @@ h3 {
   font-size: 1rem;
 }
 
-.top-stats {
-  display: flex;
-  gap: 6px;
+.home-screen {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
 }
 
-.top-stats span {
-  min-width: 48px;
-  padding: 8px 9px;
-  border: 1px solid var(--line);
-  text-align: center;
-  font-weight: 800;
-}
-
-.mission-panel {
-  min-height: 120px;
-  margin-bottom: 14px;
-  padding: 16px 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-}
-
-.mission-copy {
-  min-width: 0;
-}
-
-.mission-copy p:last-child {
-  margin-bottom: 0;
-  color: var(--muted);
-}
-
-.primary-action,
+.start-only,
 .answer-form button,
 #retryWeakBtn {
   min-height: 46px;
@@ -137,23 +107,25 @@ h3 {
   font-weight: 800;
 }
 
-.primary-action,
+.start-only,
 .answer-form button {
   background: var(--ink);
   color: var(--bg);
 }
 
-.primary-action {
-  flex: 0 0 auto;
-  padding: 0 16px;
+.start-only {
+  width: min(260px, 72vw);
+  height: 58px;
+  font-size: 1.05rem;
 }
 
-.workbench {
-  border-top: 1px solid var(--line);
+.trainer-screen {
+  min-height: 100svh;
+  padding: calc(18px + env(safe-area-inset-top)) 0 calc(22px + env(safe-area-inset-bottom));
 }
 
 .mode-row {
-  display: grid;
+  display: none;
   grid-template-columns: repeat(5, 1fr);
   border-bottom: 1px solid var(--line);
 }
@@ -177,7 +149,7 @@ h3 {
 }
 
 .phase-meter {
-  padding: 14px 0;
+  padding: 0 0 14px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -197,7 +169,7 @@ h3 {
 
 .view {
   display: none;
-  padding: 16px 0;
+  padding: 18px 0;
 }
 
 .view.active {
@@ -205,7 +177,7 @@ h3 {
 }
 
 .question-card {
-  min-height: 300px;
+  min-height: calc(100svh - 300px);
   display: grid;
   align-content: center;
   gap: 16px;
@@ -361,6 +333,26 @@ h3 {
   background: var(--ink);
 }
 
+.swipe-dots {
+  position: fixed;
+  left: 50%;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  display: flex;
+  gap: 6px;
+  transform: translateX(-50%);
+}
+
+.swipe-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #cccccc;
+}
+
+.swipe-dots span.active {
+  background: var(--ink);
+}
+
 @media (min-width: 740px) {
   .app-shell {
     padding-top: 34px;
@@ -376,15 +368,6 @@ h3 {
 }
 
 @media (max-width: 430px) {
-  .mission-panel {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .primary-action {
-    width: 100%;
-  }
-
   .mode-tab {
     font-size: 0.78rem;
   }

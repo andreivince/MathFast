@@ -15,28 +15,12 @@
   </head>
   <body>
     <main class="app-shell">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">Daily trainer</p>
-          <h1>Aura Math</h1>
-        </div>
-        <div class="top-stats" aria-label="Current progress">
-          <span id="streakPill">0d</span>
-          <span id="accuracyPill">0%</span>
-        </div>
-      </header>
-
-      <section class="mission-panel" aria-labelledby="missionTitle">
-        <div class="mission-copy">
-          <p class="eyebrow">Today</p>
-          <h2 id="missionTitle">10-minute mission</h2>
-          <p id="missionStatus">Warm facts, pressure, weak facts, flash sum.</p>
-        </div>
-        <button id="startDailyBtn" class="primary-action" type="button">Start 10 min</button>
+      <section id="homeScreen" class="home-screen" aria-label="Daily mission">
+        <button id="startDailyBtn" class="start-only" type="button">Start 10 min</button>
       </section>
 
-      <section class="workbench" aria-live="polite">
-        <div class="mode-row" role="tablist" aria-label="Training mode">
+      <section id="trainerScreen" class="trainer-screen" aria-live="polite" hidden>
+        <div class="mode-row" role="tablist" aria-label="Training mode" hidden>
           <button class="mode-tab active" type="button" data-mode="timed">Drill</button>
           <button class="mode-tab" type="button" data-mode="weak">Weak</button>
           <button class="mode-tab" type="button" data-mode="pressure">Pressure</button>
@@ -99,6 +83,9 @@
             <div><span>Best 60s</span><strong id="statBest60">0</strong></div>
           </div>
           <div class="category-bars" id="categoryBars"></div>
+        </div>
+        <div class="swipe-dots" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
         </div>
       </section>
     </main>

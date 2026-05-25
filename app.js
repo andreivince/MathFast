@@ -10,9 +10,12 @@ const DAILY_PLAN = [
 ];
 
 const els = {
+  homeScreen: document.querySelector("#homeScreen"),
+  trainerScreen: document.querySelector("#trainerScreen"),
   startDailyBtn: document.querySelector("#startDailyBtn"),
   missionStatus: document.querySelector("#missionStatus"),
   modeTabs: [...document.querySelectorAll(".mode-tab")],
+  swipeDots: [...document.querySelectorAll(".swipe-dots span")],
   phaseLabel: document.querySelector("#phaseLabel"),
   phaseHint: document.querySelector("#phaseHint"),
   timerDisplay: document.querySelector("#timerDisplay"),
@@ -58,6 +61,9 @@ let currentPool = null;
 let sixtyWindow = [];
 let session = { reps: 0, correct: 0, totalMs: 0 };
 let flashRunId = 0;
+const modeOrder = ["timed", "weak", "pressure", "flash", "stats"];
+let touchStartX = 0;
+let touchStartY = 0;
 
 function defaultState() {
   return {
@@ -223,6 +229,7 @@ function slowLimit(type) {
 function setMode(nextMode) {
   mode = nextMode;
   els.modeTabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.mode === mode));
+  updateSwipeDots();
 
   if (mode === "weak") {
     if (dailyIndex >= 0) {
@@ -289,9 +296,10 @@ function tickTimer() {
 }
 
 function startDaily() {
+  showTrainer();
   dailyIndex = -1;
   session = { reps: 0, correct: 0, totalMs: 0 };
-  els.missionStatus.textContent = "Mission running.";
+  if (els.missionStatus) els.missionStatus.textContent = "Mission running.";
   advanceDaily();
 }
 
@@ -304,7 +312,7 @@ function advanceDaily() {
   const phase = DAILY_PLAN[dailyIndex];
   currentPool = phase.pool || null;
   els.phaseLabel.textContent = phase.label;
-  els.missionStatus.textContent = `${phase.label}: ${Math.round(phase.seconds / 60)} min`;
+  if (els.missionStatus) els.missionStatus.textContent = `${phase.label}: ${Math.round(phase.seconds / 60)} min`;
   setMode(phase.mode);
   startTimer(phase.seconds);
 }
@@ -322,7 +330,7 @@ function finishDaily() {
     state.stats.lastDailyDate = today;
     saveState();
   }
-  els.missionStatus.textContent = "Mission complete.";
+  if (els.missionStatus) els.missionStatus.textContent = "Mission complete.";
   renderAllStats();
   setMode("stats");
 }
@@ -497,10 +505,59 @@ function renderAllStats() {
   els.sessionReps.textContent = String(session.reps);
   els.sessionAccuracy.textContent = pct(session.correct, session.reps);
   els.sessionAvg.textContent = avgTime(session.totalMs, session.reps);
-  els.streakPill.textContent = `${state.stats.streak}d`;
-  els.accuracyPill.textContent = pct(state.stats.correct, state.stats.totalReps);
+  if (els.streakPill) els.streakPill.textContent = `${state.stats.streak}d`;
+  if (els.accuracyPill) els.accuracyPill.textContent = pct(state.stats.correct, state.stats.totalReps);
   renderStats();
   if (mode === "weak") renderWeakFacts();
+}
+
+function showHome() {
+  stopTimer();
+  dailyIndex = -1;
+  currentPool = null;
+  els.homeScreen.hidden = false;
+  els.trainerScreen.hidden = true;
+}
+
+function showTrainer() {
+  els.homeScreen.hidden = true;
+  els.trainerScreen.hidden = false;
+}
+
+function updateSwipeDots() {
+  const activeIndex = Math.max(0, modeOrder.indexOf(mode));
+  els.swipeDots.forEach((dot, index) => {
+    dot.classList.toggle("active", index === activeIndex);
+  });
+}
+
+function moveMode(direction) {
+  showTrainer();
+  stopTimer();
+  dailyIndex = -1;
+  currentPool = null;
+  const index = Math.max(0, modeOrder.indexOf(mode));
+  const nextIndex = Math.min(modeOrder.length - 1, Math.max(0, index + direction));
+  setMode(modeOrder[nextIndex]);
+}
+
+function onTouchStart(event) {
+  const touch = event.changedTouches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+}
+
+function onTouchEnd(event) {
+  const touch = event.changedTouches[0];
+  const dx = touch.clientX - touchStartX;
+  const dy = touch.clientY - touchStartY;
+  if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.35) return;
+  if (els.trainerScreen.hidden) {
+    showTrainer();
+    setMode(dx < 0 ? "timed" : "stats");
+    return;
+  }
+  moveMode(dx < 0 ? 1 : -1);
 }
 
 function renderStats() {
@@ -549,6 +606,10 @@ els.retryWeakBtn.addEventListener("click", () => {
   els.phaseHint.textContent = "Retry facts you missed or answered slowly.";
   newQuestion();
 });
+els.homeScreen.addEventListener("touchstart", onTouchStart, { passive: true });
+els.homeScreen.addEventListener("touchend", onTouchEnd, { passive: true });
+els.trainerScreen.addEventListener("touchstart", onTouchStart, { passive: true });
+els.trainerScreen.addEventListener("touchend", onTouchEnd, { passive: true });
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -557,4 +618,5 @@ if ("serviceWorker" in navigator) {
 }
 
 renderAllStats();
-setMode("timed");
+updateSwipeDots();
+showHome();
