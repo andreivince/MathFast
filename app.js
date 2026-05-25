@@ -61,9 +61,13 @@ let currentPool = null;
 let sixtyWindow = [];
 let session = { reps: 0, correct: 0, totalMs: 0 };
 let flashRunId = 0;
-const modeOrder = ["timed", "weak", "pressure", "flash", "stats"];
-let touchStartX = 0;
-let touchStartY = 0;
+const browsePages = ["weak", "home", "stats"];
+let browsePage = "home";
+let drillActive = false;
+let swipeStartX = 0;
+let swipeStartY = 0;
+let swipePointerId = null;
+let lastWheelSwipeAt = 0;
 
 function defaultState() {
   return {
@@ -228,6 +232,9 @@ function slowLimit(type) {
 
 function setMode(nextMode) {
   mode = nextMode;
+  if (!drillActive && dailyIndex < 0 && browsePages.includes(mode)) {
+    browsePage = mode;
+  }
   els.modeTabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.mode === mode));
   updateSwipeDots();
 
@@ -296,6 +303,7 @@ function tickTimer() {
 }
 
 function startDaily() {
+  drillActive = true;
   showTrainer();
   dailyIndex = -1;
   session = { reps: 0, correct: 0, totalMs: 0 };
@@ -319,6 +327,7 @@ function advanceDaily() {
 
 function finishDaily() {
   stopTimer();
+  drillActive = false;
   dailyIndex = -1;
   currentPool = null;
   const today = todayKey();
@@ -513,10 +522,13 @@ function renderAllStats() {
 
 function showHome() {
   stopTimer();
+  drillActive = false;
   dailyIndex = -1;
   currentPool = null;
+  browsePage = "home";
   els.homeScreen.hidden = false;
   els.trainerScreen.hidden = true;
+  updateSwipeDots();
 }
 
 function showTrainer() {
@@ -525,39 +537,63 @@ function showTrainer() {
 }
 
 function updateSwipeDots() {
-  const activeIndex = Math.max(0, modeOrder.indexOf(mode));
+  const activeKey = els.trainerScreen.hidden ? "home" : mode;
+  const activeIndex = Math.max(0, browsePages.indexOf(activeKey));
   els.swipeDots.forEach((dot, index) => {
     dot.classList.toggle("active", index === activeIndex);
   });
 }
 
-function moveMode(direction) {
-  showTrainer();
-  stopTimer();
-  dailyIndex = -1;
-  currentPool = null;
-  const index = Math.max(0, modeOrder.indexOf(mode));
-  const nextIndex = Math.min(modeOrder.length - 1, Math.max(0, index + direction));
-  setMode(modeOrder[nextIndex]);
-}
-
-function onTouchStart(event) {
-  const touch = event.changedTouches[0];
-  touchStartX = touch.clientX;
-  touchStartY = touch.clientY;
-}
-
-function onTouchEnd(event) {
-  const touch = event.changedTouches[0];
-  const dx = touch.clientX - touchStartX;
-  const dy = touch.clientY - touchStartY;
-  if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.35) return;
-  if (els.trainerScreen.hidden) {
-    showTrainer();
-    setMode(dx < 0 ? "timed" : "stats");
+function moveBrowsePage(direction) {
+  if (drillActive || dailyIndex >= 0) return;
+  const currentPage = els.trainerScreen.hidden ? "home" : browsePage;
+  const index = Math.max(0, browsePages.indexOf(currentPage));
+  const nextIndex = Math.min(browsePages.length - 1, Math.max(0, index + direction));
+  const nextPage = browsePages[nextIndex];
+  if (nextPage === currentPage) return;
+  browsePage = nextPage;
+  if (nextPage === "home") {
+    showHome();
     return;
   }
-  moveMode(dx < 0 ? 1 : -1);
+  showTrainer();
+  setMode(nextPage);
+}
+
+function readPoint(event) {
+  if (event.changedTouches && event.changedTouches[0]) {
+    return event.changedTouches[0];
+  }
+  return event;
+}
+
+function onSwipeStart(event) {
+  if (drillActive || dailyIndex >= 0) return;
+  const point = readPoint(event);
+  swipeStartX = point.clientX;
+  swipeStartY = point.clientY;
+  swipePointerId = event.pointerId || null;
+}
+
+function onSwipeEnd(event) {
+  if (drillActive || dailyIndex >= 0) return;
+  if (swipePointerId !== null && event.pointerId !== swipePointerId) return;
+  const point = readPoint(event);
+  const dx = point.clientX - swipeStartX;
+  const dy = point.clientY - swipeStartY;
+  swipePointerId = null;
+  if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.35) return;
+  moveBrowsePage(dx < 0 ? 1 : -1);
+}
+
+function onSwipeWheel(event) {
+  if (drillActive || dailyIndex >= 0) return;
+  if (Math.abs(event.deltaX) < 32 || Math.abs(event.deltaX) < Math.abs(event.deltaY) * 1.2) return;
+  const now = Date.now();
+  if (now - lastWheelSwipeAt < 420) return;
+  lastWheelSwipeAt = now;
+  event.preventDefault();
+  moveBrowsePage(event.deltaX > 0 ? 1 : -1);
 }
 
 function renderStats() {
@@ -599,6 +635,7 @@ els.startDailyBtn.addEventListener("click", startDaily);
 els.answerForm.addEventListener("submit", submitAnswer);
 els.retryWeakBtn.addEventListener("click", () => {
   stopTimer();
+  drillActive = true;
   mode = "weak";
   els.modeTabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.mode === mode));
   showView("timed");
@@ -606,10 +643,19 @@ els.retryWeakBtn.addEventListener("click", () => {
   els.phaseHint.textContent = "Retry facts you missed or answered slowly.";
   newQuestion();
 });
-els.homeScreen.addEventListener("touchstart", onTouchStart, { passive: true });
-els.homeScreen.addEventListener("touchend", onTouchEnd, { passive: true });
-els.trainerScreen.addEventListener("touchstart", onTouchStart, { passive: true });
-els.trainerScreen.addEventListener("touchend", onTouchEnd, { passive: true });
+els.homeScreen.addEventListener("touchstart", onSwipeStart, { passive: true });
+els.homeScreen.addEventListener("touchend", onSwipeEnd, { passive: true });
+els.trainerScreen.addEventListener("touchstart", onSwipeStart, { passive: true });
+els.trainerScreen.addEventListener("touchend", onSwipeEnd, { passive: true });
+els.homeScreen.addEventListener("pointerdown", onSwipeStart);
+els.homeScreen.addEventListener("pointerup", onSwipeEnd);
+els.trainerScreen.addEventListener("pointerdown", onSwipeStart);
+els.trainerScreen.addEventListener("pointerup", onSwipeEnd);
+els.homeScreen.addEventListener("mousedown", onSwipeStart);
+els.homeScreen.addEventListener("mouseup", onSwipeEnd);
+els.trainerScreen.addEventListener("mousedown", onSwipeStart);
+els.trainerScreen.addEventListener("mouseup", onSwipeEnd);
+window.addEventListener("wheel", onSwipeWheel, { passive: false });
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
