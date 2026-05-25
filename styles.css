@@ -194,11 +194,64 @@ h3 {
   margin: 0;
   overflow-wrap: anywhere;
   color: var(--ink);
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.16em;
   font-size: clamp(3rem, 18vw, 8rem);
   font-weight: 850;
-  line-height: 0.9;
+  line-height: 1;
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
+}
+
+.question-text sup {
+  font-size: 0.44em;
+  line-height: 0;
+  margin-left: 0.02em;
+  position: relative;
+  top: -0.72em;
+}
+
+.math-op {
+  font-weight: 650;
+  margin: 0 0.02em;
+}
+
+.math-word {
+  color: var(--muted);
+  font-size: 0.28em;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.unknown {
+  display: inline-grid;
+  place-items: center;
+  width: 0.9em;
+  height: 0.9em;
+  border: 0.045em solid var(--ink);
+  font-size: 0.72em;
+  line-height: 1;
+}
+
+.fraction {
+  display: inline-grid;
+  align-items: center;
+  min-width: 0.72em;
+  font-size: 0.72em;
+  line-height: 0.82;
+  text-align: center;
+}
+
+.fraction span:first-child {
+  padding: 0 0.08em 0.08em;
+  border-bottom: 0.045em solid var(--ink);
+}
+
+.fraction span:last-child {
+  padding: 0.08em 0.08em 0;
 }
 
 .answer-form {

@@ -152,6 +152,49 @@ function answerLooksComplete(rawValue, parsedValue, question) {
   return value.split(".")[1].length >= neededDecimals;
 }
 
+function mathDisplay(type, parts) {
+  if (type === "add") return `<span>${parts.a}</span><span class="math-op">+</span><span>${parts.b}</span>`;
+  if (type === "subtract") return `<span>${parts.a}</span><span class="math-op">-</span><span>${parts.b}</span>`;
+  if (type === "multiply") return `<span>${parts.a}</span><span class="math-op">&times;</span><span>${parts.b}</span>`;
+  if (type === "divide") return `<span>${parts.a}</span><span class="math-op">&divide;</span><span>${parts.b}</span>`;
+  if (type === "percent") return `<span>${parts.pct}%</span><span class="math-word">of</span><span>${parts.b}</span>`;
+  if (type === "squares") return `<span>${parts.a}</span><sup>2</sup>`;
+  if (type === "fractions") {
+    return `<span class="fraction"><span>${parts.num}</span><span>${parts.den}</span></span><span class="math-word">of</span><span>${parts.b}</span>`;
+  }
+  if (type === "complements") {
+    return `<span>${parts.a}</span><span class="math-op">+</span><span class="unknown">?</span><span class="math-op">=</span><span>100</span>`;
+  }
+  if (type === "estimate") return `<span>${parts.a}</span><span class="math-op">&times;</span><span>${parts.b}</span><span class="math-op">&asymp;</span>`;
+  return "";
+}
+
+function renderQuestion(question) {
+  els.questionText.innerHTML = question.display || displayFromPrompt(question.prompt);
+}
+
+function displayFromPrompt(prompt) {
+  let match = prompt.match(/^(-?\d+) \+ (-?\d+)$/);
+  if (match) return mathDisplay("add", { a: match[1], b: match[2] });
+  match = prompt.match(/^(-?\d+) - (-?\d+)$/);
+  if (match) return mathDisplay("subtract", { a: match[1], b: match[2] });
+  match = prompt.match(/^(-?\d+) x (-?\d+)$/);
+  if (match) return mathDisplay("multiply", { a: match[1], b: match[2] });
+  match = prompt.match(/^(-?\d+) \/ (-?\d+)$/);
+  if (match) return mathDisplay("divide", { a: match[1], b: match[2] });
+  match = prompt.match(/^(-?\d+(?:\.\d+)?)% of (-?\d+)$/);
+  if (match) return mathDisplay("percent", { pct: match[1], b: match[2] });
+  match = prompt.match(/^(-?\d+)\^2$/);
+  if (match) return mathDisplay("squares", { a: match[1] });
+  match = prompt.match(/^(\d+)\/(\d+) of (-?\d+)$/);
+  if (match) return mathDisplay("fractions", { num: match[1], den: match[2], b: match[3] });
+  match = prompt.match(/^(-?\d+) \+ \? = 100$/);
+  if (match) return mathDisplay("complements", { a: match[1] });
+  match = prompt.match(/^(-?\d+) x (-?\d+) ~=/);
+  if (match) return mathDisplay("estimate", { a: match[1], b: match[2] });
+  return prompt;
+}
+
 function makeQuestion(pool = null) {
   const types = pool || ["add", "subtract", "multiply", "divide", "percent", "squares", "fractions", "complements", "estimate"];
   const type = pick(types);
@@ -159,6 +202,7 @@ function makeQuestion(pool = null) {
   let b;
   let answer;
   let prompt;
+  let display;
   let tolerance = 0.001;
 
   if (type === "add") {
@@ -166,49 +210,58 @@ function makeQuestion(pool = null) {
     b = rand(8, 176);
     answer = a + b;
     prompt = `${a} + ${b}`;
+    display = mathDisplay(type, { a, b });
   } else if (type === "subtract") {
     a = rand(40, 220);
     b = rand(8, a - 1);
     answer = a - b;
     prompt = `${a} - ${b}`;
+    display = mathDisplay(type, { a, b });
   } else if (type === "multiply") {
     a = rand(3, 19);
     b = rand(3, 19);
     answer = a * b;
     prompt = `${a} x ${b}`;
+    display = mathDisplay(type, { a, b });
   } else if (type === "divide") {
     b = rand(3, 16);
     answer = rand(3, 18);
     a = b * answer;
     prompt = `${a} / ${b}`;
+    display = mathDisplay(type, { a, b });
   } else if (type === "percent") {
     const pct = pick([5, 10, 12.5, 15, 20, 25, 30, 40, 50, 75]);
     b = rand(8, 32) * 10;
     answer = (pct / 100) * b;
     prompt = `${pct}% of ${b}`;
+    display = mathDisplay(type, { pct, b });
     tolerance = 0.01;
   } else if (type === "squares") {
     a = rand(11, 29);
     answer = a * a;
     prompt = `${a}^2`;
+    display = mathDisplay(type, { a });
   } else if (type === "fractions") {
     const fraction = pick([[1, 2], [1, 3], [2, 3], [1, 4], [3, 4], [1, 5], [2, 5]]);
     b = rand(4, 30) * fraction[1];
     answer = (fraction[0] / fraction[1]) * b;
     prompt = `${fraction[0]}/${fraction[1]} of ${b}`;
+    display = mathDisplay(type, { num: fraction[0], den: fraction[1], b });
   } else if (type === "complements") {
     a = rand(2, 98);
     answer = 100 - a;
     prompt = `${a} + ? = 100`;
+    display = mathDisplay(type, { a });
   } else {
     a = rand(12, 98);
     b = rand(12, 98);
     answer = Math.round(a * b / 10) * 10;
     prompt = `${a} x ${b} ~=`;
+    display = mathDisplay(type, { a, b });
     tolerance = Math.max(10, Math.abs(answer) * 0.12);
   }
 
-  return { type, category: labelForType(type), prompt, answer, tolerance };
+  return { type, category: labelForType(type), prompt, display, answer, tolerance };
 }
 
 function makeFlashQuestion() {
@@ -384,7 +437,7 @@ function newQuestion(forced = null) {
   activeQuestion = forced || pullWeakQuestion() || makeQuestion(currentPool);
   activeStarted = performance.now();
   els.categoryLabel.textContent = activeQuestion.category;
-  els.questionText.textContent = activeQuestion.prompt;
+  renderQuestion(activeQuestion);
   if (mode === "pressure") {
     pressureTimeout = window.setTimeout(markFreeze, 6000);
   }
@@ -466,6 +519,7 @@ function recordResult(question, correct, slow, elapsed) {
 
   const fact = state.facts[question.prompt] || {
     prompt: question.prompt,
+    display: question.display,
     type: question.type,
     answer: question.answer,
     tolerance: question.tolerance,
@@ -476,6 +530,7 @@ function recordResult(question, correct, slow, elapsed) {
     lastSeen: null
   };
   fact.reps += 1;
+  if (question.display) fact.display = question.display;
   fact.wrong += correct ? 0 : 1;
   fact.slow += slow ? 1 : 0;
   fact.totalMs += elapsed;
@@ -509,6 +564,7 @@ function pullWeakQuestion() {
     type: fact.type,
     category: labelForType(fact.type),
     prompt: fact.prompt,
+    display: fact.display,
     answer: fact.answer,
     tolerance: fact.tolerance
   };
